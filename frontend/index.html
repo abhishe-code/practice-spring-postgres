@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Practice Users App</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+    input, button { padding: 8px; font-size: 16px; }
+    ul { padding-left: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Users (Practice)</h1>
+  <form id="userForm">
+    <input id="name" placeholder="Enter name" required />
+    <button type="submit">Add User</button>
+  </form>
+  <h3>List of users</h3>
+  <button id="loadBtn">Load Users</button>
+  <ul id="userList"></ul>
+
+  <script>
+    const API_BASE = "http://localhost:8081/api/users"; // change to deployed backend URL when hosted
+
+    async function loadUsers() {
+      try {
+        const res = await fetch(API_BASE);
+        const users = await res.json();
+        const ul = document.getElementById('userList');
+        ul.innerHTML = '';
+        users.forEach(u => {
+          const li = document.createElement('li');
+          li.textContent = u.name;
+          ul.appendChild(li);
+        });
+      } catch (err) {
+        alert('Failed to load users. Is backend running?\n' + err);
+      }
+    }
+
+    document.getElementById('loadBtn').addEventListener('click', loadUsers);
+
+    document.getElementById('userForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      if (!name) return;
+      try {
+        const res = await fetch(API_BASE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        if (!res.ok) throw new Error('Server error');
+        document.getElementById('name').value = '';
+        loadUsers();
+      } catch (err) {
+        alert('Failed to create user. Is backend running?\n' + err);
+      }
+    });
+  </script>
+</body>
+</html>
